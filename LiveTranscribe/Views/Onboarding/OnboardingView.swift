@@ -41,14 +41,14 @@ struct OnboardingView: View {
                         title: "Screen Recording Permission",
                         description: "LiveTranscribe needs Screen Recording access to capture system audio. No video is ever captured.",
                         action: {
-                            // Open System Preferences
                             NSWorkspace.shared.open(
                                 URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!
                             )
                         },
-                        actionLabel: "Open System Preferences",
+                        actionLabel: "Open System Settings",
                         statusText: permissionCheckResult,
-                        statusOK: permissionCheckResult == "✅ Granted"
+                        statusOK: permissionCheckResult == "✅ Granted",
+                        showRelaunchButton: permissionCheckResult.hasPrefix("⚠️")
                     )
 
                     stepCard(
@@ -62,7 +62,8 @@ struct OnboardingView: View {
                         },
                         actionLabel: "Copy install command",
                         statusText: pythonCheckResult,
-                        statusOK: pythonCheckResult.hasPrefix("✅")
+                        statusOK: pythonCheckResult.hasPrefix("✅"),
+                        showRelaunchButton: false
                     )
 
                     stepCard(
@@ -77,7 +78,8 @@ struct OnboardingView: View {
                         },
                         actionLabel: "Copy pip command",
                         statusText: nil,
-                        statusOK: nil
+                        statusOK: nil,
+                        showRelaunchButton: false
                     )
 
                     stepCard(
@@ -88,7 +90,8 @@ struct OnboardingView: View {
                         action: nil,
                         actionLabel: nil,
                         statusText: nil,
-                        statusOK: nil
+                        statusOK: nil,
+                        showRelaunchButton: false
                     )
 
                     // Optional: BlackHole note
@@ -129,15 +132,24 @@ struct OnboardingView: View {
     // MARK: - Recheck
 
     private func recheck() async {
-        // Check screen recording permission
-        if CGPreflightScreenCaptureAccess() || CGRequestScreenCaptureAccess() {
+        permissionCheckResult = "Checking…"
+
+        // Use the same authoritative check as AudioCaptureService:
+        // SCShareableContent.excludingDesktopWindows is what SCStream actually needs.
+        // CGPreflightScreenCaptureAccess() returns false for ad-hoc signed apps even
+        // when the toggle IS on — so we never rely on it for the status display.
+        do {
+            _ = try await SCShareableContent.excludingDesktopWindows(
+                false, onScreenWindowsOnly: false)
             permissionCheckResult = "✅ Granted"
-        } else {
-            do {
-                _ = try await SCShareableContent.current
-                permissionCheckResult = "✅ Granted"
-            } catch {
-                permissionCheckResult = "❌ Not granted — if just enabled in System Settings, please Quit & Relaunch LiveTranscribe."
+        } catch {
+            // Permission is toggled ON but the process needs a relaunch to pick it up
+            // (macOS TCC only propagates to already-running processes after restart).
+            let toggleIsOn = CGPreflightScreenCaptureAccess()
+            if toggleIsOn {
+                permissionCheckResult = "⚠️ Enabled — please Quit & Relaunch LiveTranscribe to activate."
+            } else {
+                permissionCheckResult = "❌ Not granted — enable the toggle in System Settings, then Quit & Relaunch."
             }
         }
 
@@ -172,7 +184,8 @@ struct OnboardingView: View {
         action: (() -> Void)?,
         actionLabel: String?,
         statusText: String?,
-        statusOK: Bool?
+        statusOK: Bool?,
+        showRelaunchButton: Bool = false
     ) -> some View {
         HStack(alignment: .top, spacing: 16) {
             // Number badge
@@ -204,15 +217,31 @@ struct OnboardingView: View {
                 }
 
                 if let status = statusText {
+                    let isWarning = status.hasPrefix("⚠️")
+                    let isOK = statusOK == true
                     HStack(spacing: 4) {
-                        Image(systemName: statusOK == true
+                        Image(systemName: isOK
                               ? "checkmark.circle.fill"
-                              : (statusOK == false ? "xmark.circle.fill" : "circle"))
-                            .foregroundStyle(statusOK == true ? .green : (statusOK == false ? .red : .gray))
+                              : (isWarning ? "exclamationmark.circle.fill"
+                              : (statusOK == false ? "xmark.circle.fill" : "circle")))
+                            .foregroundStyle(isOK ? .green : (isWarning ? .orange : (statusOK == false ? .red : .gray)))
                         Text(status)
                             .font(.system(size: 11, design: .monospaced))
                             .foregroundStyle(.secondary)
                     }
+                }
+
+                // "Quit & Relaunch" button shown when toggle is on but SCKit still denied
+                if showRelaunchButton {
+                    Button {
+                        NSApplication.shared.terminate(nil)
+                    } label: {
+                        Label("Quit & Relaunch", systemImage: "arrow.counterclockwise.circle.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.orange)
+                    .padding(.top, 2)
                 }
             }
         }

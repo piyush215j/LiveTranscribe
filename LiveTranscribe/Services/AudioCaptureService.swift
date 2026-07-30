@@ -56,25 +56,34 @@ final class AudioCaptureService: NSObject, ObservableObject {
 
     // MARK: - Permission
 
-    /// Checks if screen-recording permission has been granted.
+    /// Checks if screen-recording permission is actually usable.
+    /// Uses SCShareableContent.excludingDesktopWindows as the real probe —
+    /// CGPreflightScreenCaptureAccess() is unreliable for ad-hoc signed binaries.
     func checkPermission() async -> Bool {
-        if CGPreflightScreenCaptureAccess() {
-            permissionGranted = true
-            return true
-        }
-        if CGRequestScreenCaptureAccess() {
-            permissionGranted = true
-            return true
-        }
         do {
-            _ = try await SCShareableContent.current
+            // This is the authoritative check: if SCKit can enumerate content,
+            // we have permission. This matches what startCapture() will call.
+            _ = try await SCShareableContent.excludingDesktopWindows(
+                false, onScreenWindowsOnly: false)
             permissionGranted = true
+            errorMessage = nil
             return true
         } catch {
             permissionGranted = false
-            errorMessage = AudioCaptureError.permissionDenied.localizedDescription
+            // Don't overwrite errorMessage here — let the caller decide messaging
             return false
         }
+    }
+
+    /// Triggers the macOS Screen Recording permission prompt if not yet granted,
+    /// then re-checks. Returns true if permission was granted.
+    func requestPermission() async -> Bool {
+        // CGRequestScreenCaptureAccess shows the system alert (if not yet decided)
+        // For ad-hoc apps this may do nothing, so we follow up with the real check.
+        CGRequestScreenCaptureAccess()
+        // Small delay to let the TCC daemon process the decision
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        return await checkPermission()
     }
 
     // MARK: - Start / Stop

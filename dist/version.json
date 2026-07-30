@@ -1,5 +1,5 @@
 {
-  "version": "1.0.12",
+  "version": "1.0.13",
   "releaseDate": "2026-07-30",
   "releaseNotes": "\u2022 Perfectly centered 1500x1500 white squircle app logo.\n\u2022 Added real-time model loading countdown timer.\n\u2022 Improved YouTube speech capture & audio buffer extraction.\n\u2022 Added 1-click in-app update engine linked to GitHub Releases.",
   "downloadUrl": "/Users/piyush/Desktop/LiveTranscribe/dist/LiveTranscribe.dmg",
