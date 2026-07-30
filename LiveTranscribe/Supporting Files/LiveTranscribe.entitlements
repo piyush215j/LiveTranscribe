@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	    LiveTranscribe runs WITHOUT app sandbox to allow:
+	      - Launching Python subprocesses (faster-whisper bridge)
+	      - Arbitrary filesystem access (transcript / export folders)
+	      - ScreenCaptureKit system audio capture
+	-->
+	<key>com.apple.security.app-sandbox</key>
+	<false/>
+</dict>
+</plist>

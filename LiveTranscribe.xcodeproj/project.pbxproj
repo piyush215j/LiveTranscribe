@@ -1,0 +1,520 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AABB00000000000000000040 /* LiveTranscribeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000020 /* LiveTranscribeApp.swift */; };
+		AABB00000000000000000041 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000021 /* AppDelegate.swift */; };
+		AABB00000000000000000042 /* TranscriptSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000022 /* TranscriptSession.swift */; };
+		AABB00000000000000000043 /* TranscriptSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000023 /* TranscriptSegment.swift */; };
+		AABB00000000000000000044 /* WhisperModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000024 /* WhisperModel.swift */; };
+		AABB00000000000000000045 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000025 /* AppSettings.swift */; };
+		AABB00000000000000000046 /* TranscriptionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000026 /* TranscriptionViewModel.swift */; };
+		AABB00000000000000000047 /* SessionHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000027 /* SessionHistoryViewModel.swift */; };
+		AABB00000000000000000048 /* AIViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000028 /* AIViewModel.swift */; };
+		AABB00000000000000000049 /* AudioCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000029 /* AudioCaptureService.swift */; };
+		AABB0000000000000000004A /* WhisperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0000000000000000002A /* WhisperService.swift */; };
+		AABB0000000000000000004B /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0000000000000000002B /* DatabaseService.swift */; };
+		AABB0000000000000000004C /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0000000000000000002C /* ExportService.swift */; };
+		AABB0000000000000000004D /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0000000000000000002D /* AIService.swift */; };
+		AABB0000000000000000004E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0000000000000000002E /* ContentView.swift */; };
+		AABB0000000000000000004F /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0000000000000000002F /* SidebarView.swift */; };
+		AABB00000000000000000050 /* TranscriptDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000030 /* TranscriptDetailView.swift */; };
+		AABB00000000000000000051 /* FloatingTranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000031 /* FloatingTranscriptView.swift */; };
+		AABB00000000000000000052 /* FloatingWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000032 /* FloatingWindowController.swift */; };
+		AABB00000000000000000053 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000033 /* SettingsView.swift */; };
+		AABB00000000000000000054 /* AIPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000034 /* AIPanelView.swift */; };
+		AABB00000000000000000055 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000035 /* OnboardingView.swift */; };
+		AABB00000000000000000056 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000036 /* MenuBarView.swift */; };
+		AABB00000000000000000059 /* UpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0000000000000000003B /* UpdateService.swift */; };
+		AABB0000000000000000005A /* UpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0000000000000000003C /* UpdateView.swift */; };
+		AABB00000000000000000057 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000037 /* Assets.xcassets */; };
+		AABB00000000000000000058 /* whisper_bridge.py in Resources */ = {isa = PBXBuildFile; fileRef = AABB0000000000000000003A /* whisper_bridge.py */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AABB00000000000000000020 /* LiveTranscribeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTranscribeApp.swift; sourceTree = "<group>"; };
+		AABB00000000000000000021 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AABB00000000000000000022 /* TranscriptSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptSession.swift; sourceTree = "<group>"; };
+		AABB00000000000000000023 /* TranscriptSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptSegment.swift; sourceTree = "<group>"; };
+		AABB00000000000000000024 /* WhisperModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModel.swift; sourceTree = "<group>"; };
+		AABB00000000000000000025 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		AABB00000000000000000026 /* TranscriptionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionViewModel.swift; sourceTree = "<group>"; };
+		AABB00000000000000000027 /* SessionHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistoryViewModel.swift; sourceTree = "<group>"; };
+		AABB00000000000000000028 /* AIViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIViewModel.swift; sourceTree = "<group>"; };
+		AABB00000000000000000029 /* AudioCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureService.swift; sourceTree = "<group>"; };
+		AABB0000000000000000002A /* WhisperService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperService.swift; sourceTree = "<group>"; };
+		AABB0000000000000000002B /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
+		AABB0000000000000000002C /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
+		AABB0000000000000000002D /* AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIService.swift; sourceTree = "<group>"; };
+		AABB0000000000000000002E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AABB0000000000000000002F /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		AABB00000000000000000030 /* TranscriptDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptDetailView.swift; sourceTree = "<group>"; };
+		AABB00000000000000000031 /* FloatingTranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingTranscriptView.swift; sourceTree = "<group>"; };
+		AABB00000000000000000032 /* FloatingWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingWindowController.swift; sourceTree = "<group>"; };
+		AABB00000000000000000033 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AABB00000000000000000034 /* AIPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPanelView.swift; sourceTree = "<group>"; };
+		AABB00000000000000000035 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		AABB00000000000000000036 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		AABB0000000000000000003B /* UpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateService.swift; sourceTree = "<group>"; };
+		AABB0000000000000000003C /* UpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateView.swift; sourceTree = "<group>"; };
+		AABB00000000000000000037 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AABB00000000000000000038 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AABB00000000000000000039 /* LiveTranscribe.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LiveTranscribe.entitlements; sourceTree = "<group>"; };
+		AABB0000000000000000003A /* whisper_bridge.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = whisper_bridge.py; sourceTree = "<group>"; };
+		AABB0000000000000000000E /* LiveTranscribe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LiveTranscribe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AABB00000000000000000007 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AABB00000000000000000002 /* main */ = {
+			isa = PBXGroup;
+			children = (
+				AABB0000000000000000001B /* LiveTranscribe */,
+				AABB00000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AABB0000000000000000000E /* LiveTranscribe.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AABB0000000000000000001B /* LiveTranscribe */ = {
+			isa = PBXGroup;
+			children = (
+				AABB0000000000000000000F /* App */,
+				AABB00000000000000000010 /* Models */,
+				AABB00000000000000000011 /* ViewModels */,
+				AABB00000000000000000012 /* Services */,
+				AABB00000000000000000013 /* Views */,
+				AABB00000000000000000019 /* Resources */,
+				AABB0000000000000000001A /* Supporting Files */,
+			);
+			path = LiveTranscribe;
+			sourceTree = "<group>";
+		};
+		AABB0000000000000000000F /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000020 /* LiveTranscribeApp.swift */,
+				AABB00000000000000000021 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000010 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000022 /* TranscriptSession.swift */,
+				AABB00000000000000000023 /* TranscriptSegment.swift */,
+				AABB00000000000000000024 /* WhisperModel.swift */,
+				AABB00000000000000000025 /* AppSettings.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000011 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000026 /* TranscriptionViewModel.swift */,
+				AABB00000000000000000027 /* SessionHistoryViewModel.swift */,
+				AABB00000000000000000028 /* AIViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000012 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000029 /* AudioCaptureService.swift */,
+				AABB0000000000000000002A /* WhisperService.swift */,
+				AABB0000000000000000002B /* DatabaseService.swift */,
+				AABB0000000000000000002C /* ExportService.swift */,
+				AABB0000000000000000002D /* AIService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000013 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000014 /* MainWindow */,
+				AABB00000000000000000015 /* FloatingWindow */,
+				AABB00000000000000000016 /* Settings */,
+				AABB00000000000000000017 /* AIPanel */,
+				AABB00000000000000000018 /* Onboarding */,
+				AABB00000000000000000036 /* MenuBarView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000014 /* MainWindow */ = {
+			isa = PBXGroup;
+			children = (
+				AABB0000000000000000002E /* ContentView.swift */,
+				AABB0000000000000000002F /* SidebarView.swift */,
+				AABB00000000000000000030 /* TranscriptDetailView.swift */,
+			);
+			path = MainWindow;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000015 /* FloatingWindow */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000031 /* FloatingTranscriptView.swift */,
+				AABB00000000000000000032 /* FloatingWindowController.swift */,
+			);
+			path = FloatingWindow;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000016 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000033 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000017 /* AIPanel */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000034 /* AIPanelView.swift */,
+			);
+			path = AIPanel;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000018 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000035 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		AABB00000000000000000019 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000037 /* Assets.xcassets */,
+				AABB0000000000000000003A /* whisper_bridge.py */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		AABB0000000000000000001A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				AABB00000000000000000038 /* Info.plist */,
+				AABB00000000000000000039 /* LiveTranscribe.entitlements */,
+			);
+			name = "Supporting Files";
+			path = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AABB00000000000000000004 /* LiveTranscribe */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AABB0000000000000000000D /* Build configuration list for PBXNativeTarget "LiveTranscribe" */;
+			buildPhases = (
+				AABB00000000000000000007 /* Frameworks */,
+				AABB00000000000000000005 /* Sources */,
+				AABB00000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LiveTranscribe;
+			productName = LiveTranscribe;
+			productReference = AABB0000000000000000000E /* LiveTranscribe.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AABB00000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					AABB00000000000000000004 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = AABB0000000000000000000C /* Build configuration list for PBXProject "LiveTranscribe" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AABB00000000000000000002 /* main */;
+			productRefGroup = AABB00000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AABB00000000000000000004 /* LiveTranscribe */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AABB00000000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AABB00000000000000000057 /* Assets.xcassets in Resources */,
+				AABB00000000000000000058 /* whisper_bridge.py in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AABB00000000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AABB00000000000000000040 /* LiveTranscribeApp.swift in Sources */,
+				AABB00000000000000000041 /* AppDelegate.swift in Sources */,
+				AABB00000000000000000042 /* TranscriptSession.swift in Sources */,
+				AABB00000000000000000043 /* TranscriptSegment.swift in Sources */,
+				AABB00000000000000000044 /* WhisperModel.swift in Sources */,
+				AABB00000000000000000045 /* AppSettings.swift in Sources */,
+				AABB00000000000000000046 /* TranscriptionViewModel.swift in Sources */,
+				AABB00000000000000000047 /* SessionHistoryViewModel.swift in Sources */,
+				AABB00000000000000000048 /* AIViewModel.swift in Sources */,
+				AABB00000000000000000049 /* AudioCaptureService.swift in Sources */,
+				AABB0000000000000000004A /* WhisperService.swift in Sources */,
+				AABB0000000000000000004B /* DatabaseService.swift in Sources */,
+				AABB0000000000000000004C /* ExportService.swift in Sources */,
+				AABB0000000000000000004D /* AIService.swift in Sources */,
+				AABB0000000000000000004E /* ContentView.swift in Sources */,
+				AABB0000000000000000004F /* SidebarView.swift in Sources */,
+				AABB00000000000000000050 /* TranscriptDetailView.swift in Sources */,
+				AABB00000000000000000051 /* FloatingTranscriptView.swift in Sources */,
+				AABB00000000000000000052 /* FloatingWindowController.swift in Sources */,
+				AABB00000000000000000053 /* SettingsView.swift in Sources */,
+				AABB00000000000000000054 /* AIPanelView.swift in Sources */,
+				AABB00000000000000000055 /* OnboardingView.swift in Sources */,
+				AABB00000000000000000056 /* MenuBarView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AABB00000000000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AABB00000000000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		AABB0000000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "LiveTranscribe/Supporting Files/LiveTranscribe.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "LiveTranscribe/Supporting Files/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.livetranscribe.app;
+				PRODUCT_NAME = LiveTranscribe;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AABB0000000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "LiveTranscribe/Supporting Files/LiveTranscribe.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "LiveTranscribe/Supporting Files/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.livetranscribe.app;
+				PRODUCT_NAME = LiveTranscribe;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AABB0000000000000000000C /* Build configuration list for PBXProject "LiveTranscribe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AABB00000000000000000008 /* Debug */,
+				AABB00000000000000000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AABB0000000000000000000D /* Build configuration list for PBXNativeTarget "LiveTranscribe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AABB0000000000000000000A /* Debug */,
+				AABB0000000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = AABB00000000000000000001 /* Project object */;
+}

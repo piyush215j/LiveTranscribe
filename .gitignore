@@ -1,0 +1,7 @@
+# LiveTranscribe .gitignore
+build/
+.DS_Store
+*.xcuserdata
+*.xccheckout
+*.xcscmblueprint
+dist/backups.noindex/*.app
