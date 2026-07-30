@@ -54,14 +54,18 @@ final class UpdateService: ObservableObject {
 
     // MARK: - Local / Remote Manifest URL
 
-    /// Checks local update manifest directory or remote endpoint
+    /// Checks local update manifest directory or remote GitHub endpoint
     private var manifestURL: URL {
+        let githubURL = URL(string: "https://raw.githubusercontent.com/piyush215j/LiveTranscribe/main/dist/version.json")!
+        // If app is running installed from /Applications, query GitHub directly
+        if isInstalledInApplications {
+            return githubURL
+        }
         let localManifest = URL(fileURLWithPath: "/Users/piyush/Desktop/temp/LiveTranscribe/dist/version.json")
         if FileManager.default.fileExists(atPath: localManifest.path) {
             return localManifest
         }
-        // GitHub Raw Manifest endpoint for piyush215j/LiveTranscribe
-        return URL(string: "https://raw.githubusercontent.com/piyush215j/LiveTranscribe/main/dist/version.json")!
+        return githubURL
     }
 
     private init() {}
