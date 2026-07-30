@@ -3,10 +3,46 @@
 process_user_logo.py — LiveTranscribe
 Tightly crops the user logo artwork, centers it on a 1500x1500 pure white canvas,
 applies macOS squircle rounding, and generates all AppIcon PNG sizes.
+
+v3: Uses colorsys HSV saturation to reliably isolate colored/dark logo pixels
+    from white/near-white and grey backgrounds, regardless of alpha channel state.
 """
 
 import os
+import colorsys
 from PIL import Image, ImageDraw
+
+
+def find_artwork_bbox(img: Image.Image) -> tuple:
+    """
+    Scans every pixel to find the tightest box around colored or dark artwork.
+    Ignores white, near-white, and grey (low-saturation, high-luminance) pixels.
+    Returns (x1, y1, x2, y2) or None.
+    """
+    rgb = img.convert("RGB")
+    w, h = rgb.size
+
+    min_x, min_y = w, h
+    max_x, max_y = 0, 0
+    found = False
+
+    for y in range(h):
+        for x in range(w):
+            r, g, b = rgb.getpixel((x, y))
+            r_n, g_n, b_n = r / 255.0, g / 255.0, b / 255.0
+            _, sat, _ = colorsys.rgb_to_hsv(r_n, g_n, b_n)
+            luminance = 0.299 * r + 0.587 * g + 0.114 * b
+
+            # A "logo pixel" is: meaningfully colorful (sat > 12%) OR truly dark
+            if sat > 0.12 or luminance < 80:
+                if x < min_x: min_x = x
+                if y < min_y: min_y = y
+                if x > max_x: max_x = x
+                if y > max_y: max_y = y
+                found = True
+
+    return (min_x, min_y, max_x + 1, max_y + 1) if found else None
+
 
 def process_logo():
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,52 +53,66 @@ def process_logo():
         print(f"Error: {source_path} not found.")
         return
 
-    # Open image
+    print(f"✓ Loading source: {source_path}")
     orig = Image.open(source_path).convert("RGBA")
+    orig_w, orig_h = orig.size
+    print(f"  Source dimensions: {orig_w}x{orig_h}")
 
-    # 1. Tightly find bounding box of non-white artwork pixels
-    gray = orig.convert("L")
-    bw = gray.point(lambda p: 255 if p < 240 else 0)
-    bbox = bw.getbbox()
+    # 1. Find the true artwork bounding box using saturation/luminance detection
+    print("  Detecting logo artwork pixels...")
+    bbox = find_artwork_bbox(orig)
 
     if not bbox:
-        print("Error: Could not find artwork bounding box.")
+        print("Error: Could not detect any logo artwork pixels.")
         return
 
-    # Tightly crop the microphone artwork
-    artwork = orig.crop(bbox)
+    bx1, by1, bx2, by2 = bbox
+    aw = bx2 - bx1
+    ah = by2 - by1
+    print(f"✓ Logo detected at: ({bx1},{by1}) → ({bx2},{by2}), size: {aw}x{ah}")
+
+    # Add 5% padding buffer around the detected logo so edges aren't clipped
+    pad = int(max(aw, ah) * 0.05)
+    bx1 = max(0, bx1 - pad)
+    by1 = max(0, by1 - pad)
+    bx2 = min(orig_w, bx2 + pad)
+    by2 = min(orig_h, by2 + pad)
+
+    # Crop to artwork only
+    artwork = orig.crop((bx1, by1, bx2, by2))
     aw, ah = artwork.size
-    print(f"✓ Cropped artwork size: {aw}x{ah}")
+    print(f"✓ Cropped size (with {pad}px padding): {aw}x{ah}")
 
     # 2. Create 1500x1500 pure white canvas
     canvas_size = 1500
     canvas = Image.new("RGBA", (canvas_size, canvas_size), (255, 255, 255, 255))
 
-    # Target artwork size inside 1500x1500 canvas (fit within ~1050x1050 area)
-    max_target = 1050
+    # Fit the logo within 78% of the canvas (industry standard safe zone for macOS icons)
+    safe_zone = int(canvas_size * 0.78)
     aspect = float(aw) / float(ah)
 
-    if aw > ah:
-        target_w = max_target
-        target_h = int(max_target / aspect)
+    if aspect >= 1.0:
+        target_w = safe_zone
+        target_h = int(safe_zone / aspect)
     else:
-        target_h = max_target
-        target_w = int(max_target * aspect)
+        target_h = safe_zone
+        target_w = int(safe_zone * aspect)
 
+    print(f"  Rendering at: {target_w}x{target_h} (inside {canvas_size}x{canvas_size} canvas)")
     artwork_resized = artwork.resize((target_w, target_h), Image.Resampling.LANCZOS)
 
-    # 3. Paste artwork at EXACT center of 1500x1500 canvas
-    center_x = int((canvas_size - target_w) / 2)
-    center_y = int((canvas_size - target_h) / 2)
+    # 3. Paste at EXACT geometric center
+    paste_x = (canvas_size - target_w) // 2
+    paste_y = (canvas_size - target_h) // 2
+    print(f"✓ Centered at: X={paste_x}, Y={paste_y}")
 
-    # Convert any white background in artwork_resized to match solid white
-    canvas.paste(artwork_resized, (center_x, center_y), artwork_resized)
-    print(f"✓ Centered artwork at X:{center_x}, Y:{center_y}")
+    # Composite with white background for any semi-transparent edges
+    canvas.paste(artwork_resized, (paste_x, paste_y), artwork_resized)
 
-    # 4. Apply macOS squircle mask to 1500x1500 canvas
-    icon_1500 = Image.new("RGBA", (canvas_size, canvas_size), (0, 0, 0, 0))
+    # 4. Apply macOS squircle mask
+    icon_master = Image.new("RGBA", (canvas_size, canvas_size), (0, 0, 0, 0))
 
-    margin = int(canvas_size * 0.05)
+    margin = int(canvas_size * 0.02)
     corner_radius = int(canvas_size * 0.22)
     box = [margin, margin, canvas_size - margin, canvas_size - margin]
 
@@ -70,24 +120,33 @@ def process_logo():
     mask_draw = ImageDraw.Draw(mask)
     mask_draw.rounded_rectangle(box, radius=corner_radius, fill=255)
 
-    # Soft subtle border around white squircle card
+    # Subtle light border around the squircle
     border_draw = ImageDraw.Draw(canvas)
-    border_draw.rounded_rectangle(box, radius=corner_radius, outline=(210, 215, 220, 255), width=int(canvas_size * 0.01))
+    border_draw.rounded_rectangle(
+        box, radius=corner_radius,
+        outline=(200, 205, 210, 200),
+        width=max(2, int(canvas_size * 0.007))
+    )
 
-    icon_1500.paste(canvas, (0, 0), mask)
+    icon_master.paste(canvas, (0, 0), mask)
 
-    # 5. Save all macOS AppIcon resolutions from 1500x1500 master
+    # 5. Save all macOS AppIcon sizes
     os.makedirs(assets_dir, exist_ok=True)
     sizes = [16, 32, 64, 128, 256, 512, 1024]
 
     for sz in sizes:
-        resized = icon_1500.resize((sz, sz), Image.Resampling.LANCZOS)
+        resized = icon_master.resize((sz, sz), Image.Resampling.LANCZOS)
         filename = f"icon_{sz}x{sz}.png"
         filepath = os.path.join(assets_dir, filename)
         resized.save(filepath, "PNG")
         print(f"✓ Generated {filename}")
 
-    # Generate Xcode Contents.json
+    # Save a 1024 preview for quick visual inspection
+    preview_path = os.path.join(script_dir, "..", "LiveTranscribe", "Resources", "icon_preview_1024.png")
+    icon_master.resize((1024, 1024), Image.Resampling.LANCZOS).save(preview_path, "PNG")
+    print(f"✓ Saved preview → {os.path.abspath(preview_path)}")
+
+    # 6. Write Xcode Contents.json
     contents_json = """{
   "images" : [
     { "idiom" : "mac", "scale" : "1x", "size" : "16x16",   "filename" : "icon_16x16.png" },
@@ -110,7 +169,8 @@ def process_logo():
     with open(os.path.join(assets_dir, "Contents.json"), "w") as f:
         f.write(contents_json)
 
-    print("✓ AppIcon.appiconset successfully updated with centered 1500x1500 white logo!")
+    print("\n✅ Done — logo is big, perfectly centered, and all icon sizes regenerated.")
+
 
 if __name__ == "__main__":
     process_logo()
