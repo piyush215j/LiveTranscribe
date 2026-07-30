@@ -60,8 +60,8 @@ final class UpdateService: ObservableObject {
         if FileManager.default.fileExists(atPath: localManifest.path) {
             return localManifest
         }
-        // GitHub Raw Manifest endpoint (Replace USERNAME with your GitHub username)
-        return URL(string: "https://raw.githubusercontent.com/piyush/LiveTranscribe/main/dist/version.json")!
+        // GitHub Raw Manifest endpoint for piyush215j/LiveTranscribe
+        return URL(string: "https://raw.githubusercontent.com/piyush215j/LiveTranscribe/main/dist/version.json")!
     }
 
     private init() {}

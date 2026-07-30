@@ -1,7 +1,7 @@
 {
   "version": "1.0.9",
   "releaseDate": "2026-07-30",
-  "releaseNotes": "\u2022 New glowing LiveTranscribe app icon.\n\u2022 Added real-time model initialization timer.\n\u2022 Improved YouTube speech capture & audio buffer extraction.\n\u2022 Fixed duplicate app icons in macOS Launchpad.",
-  "downloadUrl": "/Users/piyush/Desktop/temp/LiveTranscribe/dist/LiveTranscribe.dmg",
+  "releaseNotes": "• Perfectly centered 1500x1500 white squircle app logo.\n• Added real-time model loading countdown timer.\n• Improved YouTube speech capture & audio buffer extraction.\n• Added 1-click in-app update engine linked to GitHub Releases.",
+  "downloadUrl": "https://github.com/piyush215j/LiveTranscribe/releases/download/v1.0.9/LiveTranscribe.dmg",
   "minOSVersion": "13.0"
 }
