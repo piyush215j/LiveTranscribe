@@ -65,7 +65,7 @@ struct ContentView: View {
     private var mainToolbar: some ToolbarContent {
 
         // Left: Record button
-        ToolbarItemGroup(placement: .navigation) {
+        ToolbarItem(placement: .navigation) {
             RecordButton()
                 .environmentObject(transcriptionVM)
         }
@@ -77,14 +77,13 @@ struct ContentView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 AudioLevelBar(level: transcriptionVM.audioLevel)
-                    .frame(width: 160, height: 4)
+                    .frame(width: 140, height: 4)
                     .opacity(transcriptionVM.isCapturing ? 1 : 0)
             }
         }
 
-        // Right: AI, floating window, model picker
-        ToolbarItemGroup(placement: .primaryAction) {
-            // Model selector
+        // Right: Model picker
+        ToolbarItem(placement: .primaryAction) {
             Picker("Model", selection: $settings.whisperModel) {
                 ForEach(WhisperModelSize.allCases) { m in
                     Text(m.shortName).tag(m)
@@ -93,18 +92,21 @@ struct ContentView: View {
             .pickerStyle(.menu)
             .frame(width: 90)
             .disabled(transcriptionVM.isCapturing)
+            .help("Select Whisper model")
+        }
 
-            Divider()
-
-            // AI features
+        // Right: AI panel
+        ToolbarItem(placement: .primaryAction) {
             Button {
                 showAIPanel = true
             } label: {
                 Label("AI", systemImage: "sparkles")
             }
             .help("AI Features — summarise, notes, flashcards…")
+        }
 
-            // Floating window
+        // Right: Floating window toggle
+        ToolbarItem(placement: .primaryAction) {
             Button {
                 if let delegate = NSApp.delegate as? AppDelegate {
                     delegate.toggleFloatingWindow()
@@ -113,15 +115,16 @@ struct ContentView: View {
                 Label("Float", systemImage: "pip")
             }
             .help("Toggle floating transcript window")
+        }
 
-            Divider()
-
-            // Dependency Health Indicator
+        // Right: Dependency health indicator (separate, always visible)
+        ToolbarItem(placement: .primaryAction) {
             DependencyHealthButton()
                 .environmentObject(transcriptionVM)
         }
     }
 }
+
 
 // MARK: - Record Button
 
@@ -203,72 +206,117 @@ struct DependencyHealthButton: View {
     @EnvironmentObject var vm: TranscriptionViewModel
     @State private var showPopover = false
 
+    private var iconName: String {
+        switch vm.dependencyState {
+        case .checking: return "shield.lefthalf.filled"
+        case .healthy:  return "shield.checkmark.fill"
+        default:        return "exclamationmark.shield.fill"
+        }
+    }
+
+    private var iconColor: Color {
+        switch vm.dependencyState {
+        case .checking: return .secondary
+        case .healthy:  return .green
+        default:        return .orange
+        }
+    }
+
     var body: some View {
         Button {
             showPopover.toggle()
         } label: {
-            HStack(spacing: 4) {
-                Image(systemName: vm.dependencyState.isHealthy ? "shield.checkmark.fill" : "exclamationmark.shield.fill")
-                    .foregroundStyle(vm.dependencyState.isHealthy ? Color.green : Color.orange)
-                    .font(.system(size: 13))
+            Label {
+                Text("Health")
+            } icon: {
+                Image(systemName: iconName)
+                    .foregroundStyle(iconColor)
+                    .symbolRenderingMode(.multicolor)
             }
         }
-        .buttonStyle(.plain)
-        .help("System Dependencies Status — \(vm.dependencyState.labelText)")
+        .labelStyle(.iconOnly)
+        .help("System Dependencies — \(vm.dependencyState.labelText)")
         .popover(isPresented: $showPopover, arrowEdge: .bottom) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Label("Dependency Health", systemImage: "shield.fill")
-                        .font(.system(size: 13, weight: .bold))
-                    Spacer()
-                    Circle()
-                        .fill(vm.dependencyState.isHealthy ? Color.green : Color.orange)
-                        .frame(width: 8, height: 8)
-                }
+            dependencyPopover
+        }
+    }
 
-                Divider()
+    private var dependencyPopover: some View {
+        VStack(alignment: .leading, spacing: 0) {
 
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        Image(systemName: vm.dependencyState == .permissionMissing ? "xmark.circle.fill" : "checkmark.circle.fill")
-                            .foregroundStyle(vm.dependencyState == .permissionMissing ? Color.red : Color.green)
-                        Text("Screen Recording Permission")
-                            .font(.system(size: 12))
-                    }
-
-                    HStack(spacing: 8) {
-                        Image(systemName: vm.dependencyState == .whisperMissing ? "xmark.circle.fill" : "checkmark.circle.fill")
-                            .foregroundStyle(vm.dependencyState == .whisperMissing ? Color.red : Color.green)
-                        Text("Python 3 & faster-whisper")
-                            .font(.system(size: 12))
-                    }
-                }
-
-                Divider()
-
-                HStack {
-                    Button {
-                        Task { await vm.checkDependencyHealth() }
-                    } label: {
-                        Label("Recheck", systemImage: "arrow.clockwise")
-                            .font(.system(size: 11))
-                    }
-                    .buttonStyle(.bordered)
-
-                    Spacer()
-
-                    Button {
-                        showPopover = false
-                        vm.showOnboarding = true
-                    } label: {
-                        Text("Setup Guide")
-                            .font(.system(size: 11, weight: .semibold))
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
+            // Header
+            HStack(spacing: 8) {
+                Image(systemName: iconName)
+                    .foregroundStyle(iconColor)
+                    .symbolRenderingMode(.multicolor)
+                    .font(.system(size: 15))
+                Text("Dependency Health")
+                    .font(.system(size: 13, weight: .semibold))
+                Spacer()
+                Circle()
+                    .fill(iconColor)
+                    .frame(width: 8, height: 8)
             }
-            .padding(14)
-            .frame(width: 270)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.secondary.opacity(0.07))
+
+            Divider()
+
+            // Status rows
+            VStack(alignment: .leading, spacing: 10) {
+                dependencyRow(
+                    label: "Screen Recording Permission",
+                    ok: vm.dependencyState != .permissionMissing && vm.dependencyState != .checking
+                )
+                dependencyRow(
+                    label: "Python 3 & faster-whisper",
+                    ok: vm.dependencyState == .healthy
+                )
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            Divider()
+
+            // Actions
+            HStack(spacing: 8) {
+                Button {
+                    Task { await vm.checkDependencyHealth() }
+                } label: {
+                    Label("Recheck", systemImage: "arrow.clockwise")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+
+                Spacer()
+
+                Button {
+                    showPopover = false
+                    vm.showOnboarding = true
+                } label: {
+                    Text("Setup Guide")
+                        .font(.system(size: 11, weight: .semibold))
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+        }
+        .frame(width: 280)
+    }
+
+    private func dependencyRow(label: String, ok: Bool) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: ok ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .foregroundStyle(ok ? Color.green : Color.red)
+                .font(.system(size: 13))
+            Text(label)
+                .font(.system(size: 12))
+                .foregroundStyle(.primary)
         }
     }
 }
+
