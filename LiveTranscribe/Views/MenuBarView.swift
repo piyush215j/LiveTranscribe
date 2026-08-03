@@ -18,6 +18,12 @@ struct MenuBarView: View {
                     .foregroundStyle(Color.accentColor)
                 Text("LiveTranscribe")
                     .font(.system(size: 13, weight: .bold))
+
+                Image(systemName: vm.dependencyState.isHealthy ? "shield.checkmark.fill" : "exclamationmark.shield.fill")
+                    .font(.system(size: 11))
+                    .foregroundStyle(vm.dependencyState.isHealthy ? Color.green : Color.orange)
+                    .help(vm.dependencyState.labelText)
+
                 Spacer()
                 // Bring main window to front
                 Button {

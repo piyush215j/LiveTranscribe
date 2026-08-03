@@ -8,6 +8,29 @@ import Foundation
 import Combine
 import SwiftUI
 
+enum DependencyState: Equatable {
+    case checking
+    case healthy
+    case permissionMissing
+    case whisperMissing
+    case error(String)
+
+    var isHealthy: Bool {
+        if case .healthy = self { return true }
+        return false
+    }
+
+    var labelText: String {
+        switch self {
+        case .checking: return "Checking dependencies…"
+        case .healthy: return "Dependencies OK"
+        case .permissionMissing: return "Screen Recording permission needed"
+        case .whisperMissing: return "faster-whisper setup needed"
+        case .error(let msg): return msg
+        }
+    }
+}
+
 @MainActor
 final class TranscriptionViewModel: ObservableObject {
 
@@ -19,6 +42,7 @@ final class TranscriptionViewModel: ObservableObject {
     @Published private(set) var loadingTimerSeconds = 0
     @Published private(set) var statusMessage = "Ready"
     @Published private(set) var audioLevel:  Float = 0.0
+    @Published private(set) var dependencyState: DependencyState = .checking
 
     @Published var currentSession:  TranscriptSession?
     @Published var liveSegments:    [TranscriptSegment] = []
@@ -45,6 +69,7 @@ final class TranscriptionViewModel: ObservableObject {
 
     init() {
         bindServices()
+        Task { await checkDependencyHealth(isInitialLaunch: true) }
     }
 
     // MARK: - Bindings
@@ -257,5 +282,66 @@ final class TranscriptionViewModel: ObservableObject {
         let m = loadingTimerSeconds / 60
         let s = loadingTimerSeconds % 60
         return String(format: "%02d:%02d", m, s)
+    }
+
+    // MARK: - Dependency Health Check
+
+    func checkDependencyHealth(isInitialLaunch: Bool = false) async {
+        dependencyState = .checking
+
+        let hasPermission = await audioCapture.checkPermission()
+        guard hasPermission else {
+            dependencyState = .permissionMissing
+            handleLaunchOnboarding(isInitialLaunch: isInitialLaunch)
+            return
+        }
+
+        let venvPy = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("LiveTranscribe/venv/bin/python3").path
+
+        var candidates: [String] = []
+        if let venv = venvPy, FileManager.default.isExecutableFile(atPath: venv) {
+            candidates.append(venv)
+        }
+        candidates += [
+            "/opt/homebrew/bin/python3",
+            "/usr/local/bin/python3",
+            "/usr/bin/python3"
+        ]
+
+        var whisperFound = false
+        for path in candidates {
+            guard FileManager.default.isExecutableFile(atPath: path) else { continue }
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: path)
+            p.arguments = ["-c", "import faster_whisper"]
+            p.standardOutput = Pipe()
+            p.standardError  = Pipe()
+            try? p.run()
+            p.waitUntilExit()
+            if p.terminationStatus == 0 {
+                whisperFound = true
+                break
+            }
+        }
+
+        if whisperFound {
+            dependencyState = .healthy
+        } else {
+            dependencyState = .whisperMissing
+            handleLaunchOnboarding(isInitialLaunch: isInitialLaunch)
+        }
+    }
+
+    private func handleLaunchOnboarding(isInitialLaunch: Bool) {
+        let hasRunBefore = UserDefaults.standard.bool(forKey: "hasCompletedFirstRun")
+        if isInitialLaunch && !hasRunBefore {
+            showOnboarding = true
+        }
+    }
+
+    func markFirstRunCompleted() {
+        UserDefaults.standard.set(true, forKey: "hasCompletedFirstRun")
     }
 }

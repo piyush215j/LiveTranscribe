@@ -10,9 +10,15 @@ import ScreenCaptureKit
 struct OnboardingView: View {
 
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var vm: TranscriptionViewModel
     @State private var step = 0
     @State private var pythonCheckResult: String = "Checking…"
     @State private var permissionCheckResult: String = "Checking…"
+
+    private func closeSelf() {
+        vm.markFirstRunCompleted()
+        dismiss()
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,7 +27,7 @@ struct OnboardingView: View {
                 Label("Setup Guide", systemImage: "wand.and.sparkles")
                     .font(.system(size: 18, weight: .bold))
                 Spacer()
-                Button { dismiss() } label: {
+                Button { closeSelf() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
                         .font(.system(size: 20))
@@ -115,7 +121,7 @@ struct OnboardingView: View {
             Divider()
 
             HStack {
-                Button("Close") { dismiss() }
+                Button("Close") { closeSelf() }
                 Spacer()
                 Button("Recheck Status") {
                     Task { await recheck() }
