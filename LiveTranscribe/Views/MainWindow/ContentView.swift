@@ -226,15 +226,12 @@ struct DependencyHealthButton: View {
         Button {
             showPopover.toggle()
         } label: {
-            Label {
-                Text("Health")
-            } icon: {
-                Image(systemName: iconName)
-                    .foregroundStyle(iconColor)
-                    .symbolRenderingMode(.multicolor)
-            }
+            Image(systemName: iconName)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(iconColor)
+                .font(.system(size: 15, weight: .medium))
+                .frame(width: 20, height: 20)
         }
-        .labelStyle(.iconOnly)
         .help("System Dependencies — \(vm.dependencyState.labelText)")
         .popover(isPresented: $showPopover, arrowEdge: .bottom) {
             dependencyPopover
@@ -247,8 +244,8 @@ struct DependencyHealthButton: View {
             // Header
             HStack(spacing: 8) {
                 Image(systemName: iconName)
+                    .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(iconColor)
-                    .symbolRenderingMode(.multicolor)
                     .font(.system(size: 15))
                 Text("Dependency Health")
                     .font(.system(size: 13, weight: .semibold))
