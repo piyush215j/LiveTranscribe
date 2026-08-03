@@ -55,13 +55,14 @@ final class UpdateService: ObservableObject {
     // MARK: - Local / Remote Manifest URL
 
     /// Checks local update manifest directory or remote GitHub endpoint
+    /// Checks local update manifest directory or remote GitHub endpoint
     private var manifestURL: URL {
         let githubURL = URL(string: "https://raw.githubusercontent.com/piyush215j/LiveTranscribe/main/dist/version.json")!
         // If app is running installed from /Applications, query GitHub directly
         if isInstalledInApplications {
             return githubURL
         }
-        let localManifest = URL(fileURLWithPath: "/Users/piyush/Desktop/temp/LiveTranscribe/dist/version.json")
+        let localManifest = URL(fileURLWithPath: "/Users/piyush/Desktop/LiveTranscribe/dist/version.json")
         if FileManager.default.fileExists(atPath: localManifest.path) {
             return localManifest
         }
@@ -93,7 +94,7 @@ final class UpdateService: ObservableObject {
 
             // Compare versions
             if isVersion(manifest.version, newerThan: currentVersion) {
-                let url = URL(string: manifest.downloadUrl) ?? URL(fileURLWithPath: "/Users/piyush/Desktop/temp/LiveTranscribe/build/LiveTranscribe.app")
+                let url = URL(string: manifest.downloadUrl) ?? URL(fileURLWithPath: "/Users/piyush/Desktop/LiveTranscribe/dist/LiveTranscribe.dmg")
                 status = .updateAvailable(
                     version: manifest.version,
                     notes: manifest.releaseNotes,
@@ -118,25 +119,35 @@ final class UpdateService: ObservableObject {
             let fileManager = FileManager.default
             let targetApplicationsPath = "/Applications/LiveTranscribe.app"
 
-            // Simulate / perform download or copy
-            status = .installing(progress: 0.4)
-            try await Task.sleep(nanoseconds: 500_000_000) // smooth transition
-
             // 1. Prepare temporary directory
             let tempDir = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
 
+            var localURL = sourceURL
+            if sourceURL.scheme == "http" || sourceURL.scheme == "https" {
+                status = .installing(progress: 0.3)
+                let (downloadedLocation, response) = try await URLSession.shared.download(from: sourceURL)
+                guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+                    throw NSError(domain: "UpdateService", code: 3, userInfo: [NSLocalizedDescriptionKey: "Failed to download update file from server."])
+                }
+                let tempDMG = tempDir.appendingPathComponent("LiveTranscribeUpdate.dmg")
+                try fileManager.moveItem(at: downloadedLocation, to: tempDMG)
+                localURL = tempDMG
+            }
+
+            status = .installing(progress: 0.5)
+
             let extractedAppURL = tempDir.appendingPathComponent("LiveTranscribe.app")
 
             // 2. If source is a .app directory directly
-            if sourceURL.pathExtension == "app" || fileManager.fileExists(atPath: sourceURL.appendingPathComponent("Contents/Info.plist").path) {
-                try fileManager.copyItem(at: sourceURL, to: extractedAppURL)
-            } else if sourceURL.pathExtension == "dmg" || sourceURL.path.contains(".dmg") {
+            if localURL.pathExtension == "app" || fileManager.fileExists(atPath: localURL.appendingPathComponent("Contents/Info.plist").path) {
+                try fileManager.copyItem(at: localURL, to: extractedAppURL)
+            } else if localURL.pathExtension == "dmg" || localURL.path.contains(".dmg") {
                 // Attach DMG and copy .app out
                 let mountPath = "/Volumes/LiveTranscribeUpdate_\(UUID().uuidString.prefix(6))"
                 let attachProc = Process()
                 attachProc.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
-                attachProc.arguments = ["attach", sourceURL.path, "-mountpoint", mountPath, "-nobrowse", "-quiet"]
+                attachProc.arguments = ["attach", localURL.path, "-mountpoint", mountPath, "-nobrowse", "-quiet"]
                 try attachProc.run()
                 attachProc.waitUntilExit()
 
@@ -152,7 +163,7 @@ final class UpdateService: ObservableObject {
                 try? detachProc.run()
             } else {
                 // Fallback copy current build directory
-                let buildApp = URL(fileURLWithPath: "/Users/piyush/Desktop/temp/LiveTranscribe/build/LiveTranscribe.app")
+                let buildApp = URL(fileURLWithPath: "/Users/piyush/Desktop/LiveTranscribe/build/LiveTranscribe.app")
                 if fileManager.fileExists(atPath: buildApp.path) {
                     try fileManager.copyItem(at: buildApp, to: extractedAppURL)
                 }
@@ -220,7 +231,7 @@ final class UpdateService: ObservableObject {
 
         Task.detached(priority: .userInitiated) {
             do {
-                let buildScript = "/Users/piyush/Desktop/temp/LiveTranscribe/scripts/build_dmg.sh"
+                let buildScript = "/Users/piyush/Desktop/LiveTranscribe/scripts/build_dmg.sh"
 
                 await MainActor.run {
                     self.status = .installing(progress: 0.4)
@@ -236,7 +247,7 @@ final class UpdateService: ObservableObject {
                     self.status = .installing(progress: 0.8)
                 }
 
-                let builtApp = "/Users/piyush/Desktop/temp/LiveTranscribe/build/LiveTranscribe.app"
+                let builtApp = "/Users/piyush/Desktop/LiveTranscribe/build/LiveTranscribe.app"
                 let targetApp = "/Applications/LiveTranscribe.app"
                 let fm = FileManager.default
 

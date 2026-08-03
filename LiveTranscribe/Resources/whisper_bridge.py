@@ -114,10 +114,13 @@ def load_model(args):
 
 def pcm_to_float(raw_bytes: bytes) -> np.ndarray:
     """Convert raw Int16 PCM bytes to normalised float32 array."""
-    # '<h' = little-endian signed short
-    n = len(raw_bytes) // BYTES_PER_SAMPLE
-    samples = struct.unpack_from(f"<{n}h", raw_bytes)
-    return np.array(samples, dtype=np.float32) / 32_768.0
+    if not raw_bytes:
+        return np.array([], dtype=np.float32)
+    usable_bytes = len(raw_bytes) - (len(raw_bytes) % BYTES_PER_SAMPLE)
+    if usable_bytes == 0:
+        return np.array([], dtype=np.float32)
+    int16_samples = np.frombuffer(raw_bytes[:usable_bytes], dtype=np.int16)
+    return int16_samples.astype(np.float32) / 32768.0
 
 
 def transcribe_chunk(
@@ -133,7 +136,7 @@ def transcribe_chunk(
 
     lang = language if language else None
     try:
-        vad_params = dict(min_silence_duration_ms=500) if vad else {}
+        vad_params = dict(threshold=0.35, min_speech_duration_ms=250, min_silence_duration_ms=500) if vad else {}
         segments, info = model.transcribe(
             audio,
             language=lang,

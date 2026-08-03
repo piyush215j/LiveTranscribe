@@ -195,22 +195,19 @@ private final class AudioStreamOutput: NSObject, SCStreamOutput {
         let length = CMBlockBufferGetDataLength(blockBuffer)
         guard length > 0 else { return nil }
 
-        var rawData = Data(count: length)
-        let status = rawData.withUnsafeMutableBytes { ptr in
+        let sampleCount = length / MemoryLayout<Float32>.size
+        guard sampleCount > 0 else { return nil }
+
+        var floatSamples = [Float32](repeating: 0, count: sampleCount)
+        let status = floatSamples.withUnsafeMutableBytes { ptr in
             CMBlockBufferCopyDataBytes(blockBuffer, atOffset: 0, dataLength: length, destination: ptr.baseAddress!)
         }
         guard status == noErr else { return nil }
 
-        let sampleCount = length / MemoryLayout<Float32>.size
-        guard sampleCount > 0 else { return nil }
-
         var int16Samples = [Int16](repeating: 0, count: sampleCount)
-        rawData.withUnsafeBytes { ptr in
-            let floatPtr = ptr.bindMemory(to: Float32.self)
-            for i in 0..<sampleCount {
-                let clamped = max(-1.0, min(1.0, floatPtr[i]))
-                int16Samples[i] = Int16(clamped * 32_767.0)
-            }
+        for i in 0..<sampleCount {
+            let clamped = max(-1.0, min(1.0, floatSamples[i]))
+            int16Samples[i] = Int16(clamped * 32_767.0)
         }
 
         return int16Samples.withUnsafeBytes { Data($0) }

@@ -72,13 +72,18 @@ final class WhisperService: ObservableObject {
 
     // MARK: - Python environment detection
 
-    /// Searches common macOS locations for a python3 executable.
+    /// Searches common macOS locations for a python3 executable with faster-whisper installed.
     private nonisolated func findPython() -> String? {
         let appSupportVenv = FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
             .appendingPathComponent("LiveTranscribe/venv/bin/python3").path
 
-        var candidates = [
+        var candidates: [String] = []
+        if let venv = appSupportVenv, FileManager.default.isExecutableFile(atPath: venv) {
+            candidates.append(venv)
+        }
+
+        candidates += [
             "/opt/homebrew/bin/python3",      // Homebrew Apple Silicon
             "/opt/homebrew/bin/python3.14",
             "/opt/homebrew/bin/python3.13",
@@ -88,13 +93,27 @@ final class WhisperService: ObservableObject {
             "/usr/bin/python3",               // Xcode CLI tools
         ]
 
-        if let venv = appSupportVenv, FileManager.default.isExecutableFile(atPath: venv) {
-            candidates.insert(venv, at: 0)
+        // 1. Prefer candidate Python that has faster_whisper installed
+        for path in candidates {
+            guard FileManager.default.isExecutableFile(atPath: path) else { continue }
+            let checkProc = Process()
+            checkProc.executableURL = URL(fileURLWithPath: path)
+            checkProc.arguments = ["-c", "import faster_whisper"]
+            checkProc.standardOutput = Pipe()
+            checkProc.standardError  = Pipe()
+            try? checkProc.run()
+            checkProc.waitUntilExit()
+            if checkProc.terminationStatus == 0 {
+                return path
+            }
         }
+
+        // 2. Fallback to first executable python candidate
         for path in candidates {
             if FileManager.default.isExecutableFile(atPath: path) { return path }
         }
-        // Last resort: ask the shell
+
+        // 3. Last resort: ask the shell
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/bin/zsh")
         p.arguments = ["-c", "which python3 2>/dev/null"]

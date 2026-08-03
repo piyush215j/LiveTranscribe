@@ -47,7 +47,8 @@ fi
 
 # Python
 PYTHON=""
-for P in /opt/homebrew/bin/python3 /usr/local/bin/python3 /usr/bin/python3; do
+VENV_PY="$HOME/Library/Application Support/LiveTranscribe/venv/bin/python3"
+for P in "$VENV_PY" /opt/homebrew/bin/python3 /usr/local/bin/python3 /usr/bin/python3; do
   if [[ -x "$P" ]]; then PYTHON="$P"; break; fi
 done
 [[ -n "$PYTHON" ]] && ok "Python found: $PYTHON" || warn "Python not found (transcription will not work)"
@@ -77,7 +78,7 @@ if os.path.exists(vfile):
     new_v = '.'.join(parts)
     d['version'] = new_v
     d['releaseDate'] = datetime.date.today().isoformat()
-    d['downloadUrl'] = '$DMG_PATH'
+    d['downloadUrl'] = 'https://raw.githubusercontent.com/piyush215j/LiveTranscribe/main/dist/LiveTranscribe.dmg'
     with open(vfile, 'w') as f: json.dump(d, f, indent=2)
     print(new_v)
 else:
@@ -180,7 +181,7 @@ if xcrun actool --version &>/dev/null; then
     --platform macosx \
     --compile "$APP_BUNDLE/Contents/Resources" \
     "$PROJECT_ROOT/LiveTranscribe/Resources/Assets.xcassets" \
-    2>/dev/null || warn "actool: asset compile skipped (no icons defined)"
+    2>/dev/null || warn "actool: asset compile skipped"
 else
   warn "actool not available — skipping asset compilation"
 fi
