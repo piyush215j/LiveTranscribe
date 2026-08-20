@@ -159,6 +159,18 @@ final class DatabaseService {
         }
     }
 
+    func resumeSession(id: Int64) throws {
+        try queue.sync {
+            let sql = "UPDATE sessions SET ended_at = NULL WHERE id = ?;"
+            let stmt = try prepare(sql)
+            defer { sqlite3_finalize(stmt) }
+            sqlite3_bind_int64(stmt, 1, id)
+            guard sqlite3_step(stmt) == SQLITE_DONE else {
+                throw DatabaseError.queryFailed(dbErrorMessage())
+            }
+        }
+    }
+
     func updateSessionTitle(_ title: String, id: Int64) throws {
         try queue.sync {
             let sql = "UPDATE sessions SET title = ? WHERE id = ?;"

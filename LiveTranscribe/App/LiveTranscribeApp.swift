@@ -49,11 +49,20 @@ struct LiveTranscribeApp: App {
             // ── File menu additions ──────────────────────────────────────
             CommandGroup(after: .newItem) {
                 Divider()
-                Button("Start Recording") {
-                    Task { await transcriptionVM.startTranscription() }
+                Button("Start New Recording") {
+                    historyVM.selectedSession = nil
+                    Task { await transcriptionVM.startTranscription(resuming: nil) }
+                }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
+                .disabled(transcriptionVM.isCapturing)
+
+                Button("Resume Selected Session") {
+                    if let s = historyVM.selectedSession {
+                        Task { await transcriptionVM.startTranscription(resuming: s) }
+                    }
                 }
                 .keyboardShortcut("r", modifiers: [.command, .shift])
-                .disabled(transcriptionVM.isCapturing)
+                .disabled(transcriptionVM.isCapturing || historyVM.selectedSession == nil)
 
                 Button("Stop Recording") {
                     Task { await transcriptionVM.stopTranscription() }

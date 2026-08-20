@@ -69,6 +69,19 @@ struct SidebarView: View {
         .toolbar {
             ToolbarItem {
                 Button {
+                    Task {
+                        historyVM.selectedSession = nil
+                        await transcriptionVM.startTranscription(resuming: nil)
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .disabled(transcriptionVM.isCapturing)
+                .help("Start New Recording (⇧⌘N)")
+            }
+
+            ToolbarItem {
+                Button {
                     Task { await historyVM.loadSessions() }
                 } label: {
                     Image(systemName: "arrow.clockwise")
@@ -101,6 +114,18 @@ struct SidebarView: View {
 
     @ViewBuilder
     private func contextMenu(for session: TranscriptSession) -> some View {
+        Button {
+            historyVM.selectedSession = session
+            Task {
+                await transcriptionVM.startTranscription(resuming: session)
+            }
+        } label: {
+            Label("Resume Recording", systemImage: "record.circle")
+        }
+        .disabled(transcriptionVM.isCapturing)
+
+        Divider()
+
         Button("Rename…") {
             renameText   = session.title
             renameSession = session

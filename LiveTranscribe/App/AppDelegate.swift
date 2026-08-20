@@ -72,9 +72,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             statusPopover.performClose(nil)
         } else {
             // Build content on-demand so we get the latest VM reference
-            if let vm = transcriptionVM {
+            if let vm = transcriptionVM, let hvm = historyVM {
                 let view = MenuBarView()
                     .environmentObject(vm)
+                    .environmentObject(hvm)
                 statusPopover.contentViewController =
                     NSHostingController(rootView: view)
             }

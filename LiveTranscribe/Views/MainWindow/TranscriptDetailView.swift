@@ -135,6 +135,18 @@ struct TranscriptDetailView: View {
                 }
                 .buttonStyle(.bordered)
                 .tint(transcriptionVM.isPaused ? .green : .orange)
+            } else {
+                // Resume recording into this existing session
+                Button {
+                    Task {
+                        await transcriptionVM.startTranscription(resuming: session)
+                    }
+                } label: {
+                    Label("Resume Recording", systemImage: "record.circle.fill")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+                .help("Resume recording and transcribing into this session")
             }
 
             // Export menu

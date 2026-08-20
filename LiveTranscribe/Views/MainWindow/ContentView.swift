@@ -64,10 +64,27 @@ struct ContentView: View {
     @ToolbarContentBuilder
     private var mainToolbar: some ToolbarContent {
 
-        // Left: Record button
+        // Left: Record button & New Session button
         ToolbarItem(placement: .navigation) {
-            RecordButton()
-                .environmentObject(transcriptionVM)
+            HStack(spacing: 8) {
+                RecordButton()
+                    .environmentObject(transcriptionVM)
+                    .environmentObject(historyVM)
+
+                Button {
+                    Task {
+                        historyVM.selectedSession = nil
+                        await transcriptionVM.startTranscription(resuming: nil)
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 13, weight: .semibold))
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(.borderless)
+                .disabled(transcriptionVM.isCapturing)
+                .help("Start New Recording Session (⇧⌘N)")
+            }
         }
 
         // Centre: Status + audio level
@@ -131,12 +148,25 @@ struct ContentView: View {
 private struct RecordButton: View {
 
     @EnvironmentObject var vm: TranscriptionViewModel
+    @EnvironmentObject var historyVM: SessionHistoryViewModel
+
+    private var buttonHelp: String {
+        if vm.isCapturing {
+            return "Stop Recording (⌘.)"
+        } else if let s = historyVM.selectedSession {
+            return "Resume Recording in \"\(s.title)\""
+        } else {
+            return "Start New Recording (⇧⌘R)"
+        }
+    }
 
     var body: some View {
         Button {
             Task {
                 if vm.isCapturing {
                     await vm.stopTranscription()
+                } else if let selected = historyVM.selectedSession {
+                    await vm.startTranscription(resuming: selected)
                 } else {
                     await vm.startTranscription()
                 }
@@ -161,7 +191,7 @@ private struct RecordButton: View {
             }
         }
         .buttonStyle(.plain)
-        .help(vm.isCapturing ? "Stop Recording" : "Start Recording")
+        .help(buttonHelp)
         .overlay(alignment: .bottomTrailing) {
             if vm.isCapturing {
                 Circle()
@@ -169,6 +199,31 @@ private struct RecordButton: View {
                     .frame(width: 8, height: 8)
                     .opacity(vm.isPaused ? 0.4 : 1.0)
                     .animation(.easeInOut(duration: 0.8).repeatForever(), value: vm.isPaused)
+            }
+        }
+        .contextMenu {
+            if !vm.isCapturing {
+                if let selected = historyVM.selectedSession {
+                    Button {
+                        Task { await vm.startTranscription(resuming: selected) }
+                    } label: {
+                        Label("Resume \"\(selected.title)\"", systemImage: "record.circle")
+                    }
+                }
+                Button {
+                    Task {
+                        historyVM.selectedSession = nil
+                        await vm.startTranscription()
+                    }
+                } label: {
+                    Label("Start New Recording", systemImage: "plus.circle")
+                }
+            } else {
+                Button {
+                    Task { await vm.stopTranscription() }
+                } label: {
+                    Label("Stop Recording", systemImage: "stop.circle")
+                }
             }
         }
     }

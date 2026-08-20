@@ -63,6 +63,7 @@ final class TranscriptionViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
     private var sessionStartTime: Date?
+    private var sessionTimeOffset: Double = 0.0
     private var timerCancellable: AnyCancellable?
 
     // MARK: - Init
@@ -126,7 +127,7 @@ final class TranscriptionViewModel: ObservableObject {
 
     // MARK: - Transcription control
 
-    func startTranscription() async {
+    func startTranscription(resuming existingSession: TranscriptSession? = nil) async {
         guard !isCapturing else { return }
 
         // Check audio permission first
@@ -138,15 +139,35 @@ final class TranscriptionViewModel: ObservableObject {
         }
 
         do {
-            // Create a new database session
-            let dateStr = Date().formatted(.dateTime.month(.abbreviated).day().hour().minute())
-            let session = try db.createSession(
-                title: "Session – \(dateStr)",
-                modelUsed: settings.whisperModel.rawValue,
-                language: settings.language
-            )
-            currentSession   = session
-            liveSegments     = []
+            let session: TranscriptSession
+            if let existing = existingSession {
+                // Resuming an existing session
+                var segs = existing.segments
+                if segs.isEmpty {
+                    segs = (try? db.fetchSegments(for: existing.id)) ?? []
+                }
+                var updated = existing
+                updated.segments = segs
+                updated.endedAt = nil
+                try db.resumeSession(id: existing.id)
+                session = updated
+                currentSession = session
+                liveSegments = segs
+                let maxEnd = segs.map(\.endTime).max() ?? 0.0
+                sessionTimeOffset = max(maxEnd, 0.0)
+            } else {
+                // Create a new database session
+                let dateStr = Date().formatted(.dateTime.month(.abbreviated).day().hour().minute())
+                session = try db.createSession(
+                    title: "Session – \(dateStr)",
+                    modelUsed: settings.whisperModel.rawValue,
+                    language: settings.language
+                )
+                currentSession   = session
+                liveSegments     = []
+                sessionTimeOffset = 0.0
+            }
+
             sessionStartTime = Date()
             errorMessage     = nil
 
@@ -178,16 +199,18 @@ final class TranscriptionViewModel: ObservableObject {
 
         // Persist session end time
         if let session = currentSession {
-            try? db.updateSessionEnd(id: session.id, endedAt: Date())
+            let now = Date()
+            try? db.updateSessionEnd(id: session.id, endedAt: now)
             var updated  = session
-            updated.endedAt  = Date()
+            updated.endedAt  = now
             updated.segments = liveSegments
             currentSession   = updated
         }
 
-        isCapturing   = false
-        isPaused      = false
-        statusMessage = "Recording saved"
+        isCapturing       = false
+        isPaused          = false
+        sessionTimeOffset = 0.0
+        statusMessage     = "Recording saved"
     }
 
     func togglePause() {
@@ -209,12 +232,15 @@ final class TranscriptionViewModel: ObservableObject {
     private func handleNewSegment(_ whisperSeg: WhisperSegment) {
         guard let session = currentSession else { return }
 
+        let adjustedStart = whisperSeg.start + sessionTimeOffset
+        let adjustedEnd   = whisperSeg.end + sessionTimeOffset
+
         var seg = TranscriptSegment(
             id: 0,
             sessionId: session.id,
             text: whisperSeg.text,
-            startTime: whisperSeg.start,
-            endTime: whisperSeg.end,
+            startTime: adjustedStart,
+            endTime: adjustedEnd,
             language: whisperSeg.language,
             createdAt: Date()
         )

@@ -9,6 +9,7 @@ import SwiftUI
 struct MenuBarView: View {
 
     @EnvironmentObject var vm: TranscriptionViewModel
+    @EnvironmentObject var historyVM: SessionHistoryViewModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -69,13 +70,36 @@ struct MenuBarView: View {
             // ── Controls ──────────────────────────────────────────────────
             VStack(spacing: 6) {
                 if !vm.isCapturing {
-                    menuButton(
-                        label: "Start Recording",
-                        icon: "record.circle",
-                        tint: .red
-                    ) {
-                        Task { await vm.startTranscription() }
-                        NSApp.activate(ignoringOtherApps: true)
+                    if let selected = historyVM.selectedSession {
+                        menuButton(
+                            label: "Resume \"\(selected.title)\"",
+                            icon: "record.circle",
+                            tint: .red
+                        ) {
+                            Task { await vm.startTranscription(resuming: selected) }
+                            NSApp.activate(ignoringOtherApps: true)
+                        }
+
+                        menuButton(
+                            label: "Start New Recording",
+                            icon: "plus.circle",
+                            tint: Color.accentColor
+                        ) {
+                            Task {
+                                historyVM.selectedSession = nil
+                                await vm.startTranscription()
+                            }
+                            NSApp.activate(ignoringOtherApps: true)
+                        }
+                    } else {
+                        menuButton(
+                            label: "Start Recording",
+                            icon: "record.circle",
+                            tint: .red
+                        ) {
+                            Task { await vm.startTranscription() }
+                            NSApp.activate(ignoringOtherApps: true)
+                        }
                     }
                 } else {
                     menuButton(

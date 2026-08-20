@@ -26,6 +26,9 @@ struct TranscriptSession: Identifiable, Hashable, Codable {
 
     /// Total duration in seconds
     var duration: TimeInterval {
+        if let maxSegmentEnd = segments.map(\.endTime).max(), maxSegmentEnd > 0 {
+            return maxSegmentEnd
+        }
         guard let end = endedAt else {
             return Date().timeIntervalSince(startedAt)
         }
