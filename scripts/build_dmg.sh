@@ -166,7 +166,35 @@ chmod +x "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 cp "$PROJECT_ROOT/LiveTranscribe/Resources/whisper_bridge.py" \
    "$APP_BUNDLE/Contents/Resources/whisper_bridge.py"
 
-# Assets (compile xcassets → .car if actool is available, else copy raw)
+# AppIcon (.icns via built-in iconutil + actool if present)
+ICNS_FILE="$PROJECT_ROOT/LiveTranscribe/Resources/AppIcon.icns"
+ICONSET_SRC="$PROJECT_ROOT/LiveTranscribe/Resources/Assets.xcassets/AppIcon.appiconset"
+
+if [[ -d "$ICONSET_SRC" ]]; then
+  TMP_ICONSET="/tmp/AppIcon.iconset"
+  rm -rf "$TMP_ICONSET"
+  mkdir -p "$TMP_ICONSET"
+  [[ -f "$ICONSET_SRC/icon_16x16.png" ]]   && cp "$ICONSET_SRC/icon_16x16.png" "$TMP_ICONSET/icon_16x16.png"
+  [[ -f "$ICONSET_SRC/icon_32x32.png" ]]   && cp "$ICONSET_SRC/icon_32x32.png" "$TMP_ICONSET/icon_16x16@2x.png"
+  [[ -f "$ICONSET_SRC/icon_32x32.png" ]]   && cp "$ICONSET_SRC/icon_32x32.png" "$TMP_ICONSET/icon_32x32.png"
+  [[ -f "$ICONSET_SRC/icon_64x64.png" ]]   && cp "$ICONSET_SRC/icon_64x64.png" "$TMP_ICONSET/icon_32x32@2x.png"
+  [[ -f "$ICONSET_SRC/icon_128x128.png" ]] && cp "$ICONSET_SRC/icon_128x128.png" "$TMP_ICONSET/icon_128x128.png"
+  [[ -f "$ICONSET_SRC/icon_256x256.png" ]] && cp "$ICONSET_SRC/icon_256x256.png" "$TMP_ICONSET/icon_128x128@2x.png"
+  [[ -f "$ICONSET_SRC/icon_256x256.png" ]] && cp "$ICONSET_SRC/icon_256x256.png" "$TMP_ICONSET/icon_256x256.png"
+  [[ -f "$ICONSET_SRC/icon_512x512.png" ]] && cp "$ICONSET_SRC/icon_512x512.png" "$TMP_ICONSET/icon_256x256@2x.png"
+  [[ -f "$ICONSET_SRC/icon_512x512.png" ]] && cp "$ICONSET_SRC/icon_512x512.png" "$TMP_ICONSET/icon_512x512.png"
+  [[ -f "$ICONSET_SRC/icon_1024x1024.png" ]] && cp "$ICONSET_SRC/icon_1024x1024.png" "$TMP_ICONSET/icon_512x512@2x.png"
+
+  iconutil -c icns "$TMP_ICONSET" -o "$APP_BUNDLE/Contents/Resources/AppIcon.icns" 2>/dev/null || true
+  cp "$APP_BUNDLE/Contents/Resources/AppIcon.icns" "$ICNS_FILE" 2>/dev/null || true
+  rm -rf "$TMP_ICONSET"
+  ok "Native AppIcon.icns generated & bundled"
+elif [[ -f "$ICNS_FILE" ]]; then
+  cp "$ICNS_FILE" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+  ok "AppIcon.icns copied to bundle"
+fi
+
+# Assets (compile xcassets → .car if actool is available)
 if xcrun actool --version &>/dev/null; then
   xcrun actool \
     --output-format human-readable-text \
@@ -181,9 +209,7 @@ if xcrun actool --version &>/dev/null; then
     --platform macosx \
     --compile "$APP_BUNDLE/Contents/Resources" \
     "$PROJECT_ROOT/LiveTranscribe/Resources/Assets.xcassets" \
-    2>/dev/null || warn "actool: asset compile skipped"
-else
-  warn "actool not available — skipping asset compilation"
+    2>/dev/null || true
 fi
 
 # Info.plist (generate a clean one)
@@ -196,6 +222,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
   <key>CFBundleDisplayName</key>       <string>$APP_NAME</string>
   <key>CFBundleIdentifier</key>        <string>$BUNDLE_ID</string>
   <key>CFBundleIconFile</key>          <string>AppIcon</string>
+  <key>CFBundleIconName</key>          <string>AppIcon</string>
   <key>CFBundleVersion</key>           <string>${NEW_VER:-1.0.3}</string>
   <key>CFBundleShortVersionString</key><string>${NEW_VER:-1.0.3}</string>
   <key>CFBundleExecutable</key>        <string>$APP_NAME</string>
@@ -214,7 +241,7 @@ PLIST
 ok "Bundle assembled at: $APP_BUNDLE"
 
 # ── Step 4: Code-sign ─────────────────────────────────────────────────────
-step "Code-signing (ad-hoc — no Apple Developer account needed)"
+step "Code-signing (ad-hoc with stable designated requirement)"
 
 # Remove extended attributes (resource forks / AppleDouble files)
 xattr -cr "$APP_BUNDLE"
@@ -238,8 +265,9 @@ codesign \
   --sign "-" \
   --entitlements "$BUILD_DIR/entitlements.plist" \
   --options runtime \
+  -r='designated => identifier "com.livetranscribe.app"' \
   "$APP_BUNDLE" 2>&1 \
-  && ok "Ad-hoc code signature applied" \
+  && ok "Ad-hoc code signature with stable designated requirement applied" \
   || warn "codesign failed — app may show Gatekeeper warning on first launch"
 
 # Verify

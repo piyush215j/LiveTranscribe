@@ -169,7 +169,31 @@ def process_logo():
     with open(os.path.join(assets_dir, "Contents.json"), "w") as f:
         f.write(contents_json)
 
-    print("\n✅ Done — logo is big, perfectly centered, and all icon sizes regenerated.")
+    # 7. Generate native macOS AppIcon.icns using iconutil
+    import shutil
+    iconset_temp = os.path.join(script_dir, "..", "build", "AppIcon.iconset")
+    os.makedirs(iconset_temp, exist_ok=True)
+    icns_map = {
+        16: ["icon_16x16.png"],
+        32: ["icon_16x16@2x.png", "icon_32x32.png"],
+        64: ["icon_32x32@2x.png"],
+        128: ["icon_128x128.png"],
+        256: ["icon_128x128@2x.png", "icon_256x256.png"],
+        512: ["icon_256x256@2x.png", "icon_512x512.png"],
+        1024: ["icon_512x512@2x.png"]
+    }
+    for sz, names in icns_map.items():
+        resized = icon_master.resize((sz, sz), Image.Resampling.LANCZOS)
+        for name in names:
+            resized.save(os.path.join(iconset_temp, name), "PNG")
+
+    resources_dir = os.path.join(script_dir, "..", "LiveTranscribe", "Resources")
+    icns_path = os.path.join(resources_dir, "AppIcon.icns")
+    os.system(f"iconutil -c icns '{iconset_temp}' -o '{icns_path}'")
+    shutil.rmtree(iconset_temp, ignore_errors=True)
+    print(f"✓ Generated AppIcon.icns → {icns_path}")
+
+    print("\n✅ Done — logo is big, perfectly centered, and all icon sizes and AppIcon.icns regenerated.")
 
 
 if __name__ == "__main__":
