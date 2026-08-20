@@ -367,15 +367,18 @@ private struct SessionRow: View {
                     }
                 }
 
-                HStack(spacing: 5) {
+                HStack(spacing: 4) {
                     Text(session.formattedDate)
+                        .lineLimit(1)
                     Text("·")
                     Text(session.formattedDuration)
+                        .lineLimit(1)
                     if session.wordCount > 0 {
                         Text("·")
                         Text("\(session.wordCount)w")
+                            .lineLimit(1)
                     }
-                    Spacer()
+                    Spacer(minLength: 2)
                     Text(session.languageLabel.uppercased())
                         .font(.system(size: 8.5, weight: .bold))
                         .padding(.horizontal, 4)

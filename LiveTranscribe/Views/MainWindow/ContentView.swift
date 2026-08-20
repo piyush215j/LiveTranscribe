@@ -296,11 +296,12 @@ struct DependencyHealthButton: View {
             showPopover.toggle()
         } label: {
             Image(systemName: iconName)
-                .symbolRenderingMode(.hierarchical)
+                .symbolRenderingMode(.monochrome)
+                .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(iconColor)
-                .font(.system(size: 15, weight: .medium))
-                .frame(width: 20, height: 20)
+                .padding(4)
         }
+        .buttonStyle(.plain)
         .help("System Dependencies — \(vm.dependencyState.labelText)")
         .popover(isPresented: $showPopover, arrowEdge: .bottom) {
             dependencyPopover

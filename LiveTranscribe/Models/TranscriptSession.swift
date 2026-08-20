@@ -71,9 +71,11 @@ struct TranscriptSession: Identifiable, Hashable, Codable {
         if cal.isDateInToday(startedAt) {
             formatter.dateFormat = "h:mm a"
         } else if cal.isDateInYesterday(startedAt) {
-            return "Yesterday"
+            formatter.dateFormat = "h:mm a"
+        } else if cal.component(.year, from: startedAt) == cal.component(.year, from: Date()) {
+            formatter.dateFormat = "d MMM"
         } else {
-            formatter.dateStyle = .medium
+            formatter.dateFormat = "d MMM yy"
         }
         return formatter.string(from: startedAt)
     }

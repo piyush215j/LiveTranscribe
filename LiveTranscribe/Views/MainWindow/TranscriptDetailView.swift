@@ -48,7 +48,7 @@ struct TranscriptDetailView: View {
                     // ── Transcript Scroll View ─────────────────────────────
                     ScrollViewReader { proxy in
                         ScrollView {
-                            LazyVStack(alignment: .leading, spacing: 8) {
+                            LazyVStack(alignment: .leading, spacing: 2) {
                                 ForEach(Array(displaySegments.enumerated()), id: \.element.id) { idx, seg in
                                     SegmentRow(
                                         segment: seg,
@@ -386,16 +386,16 @@ private struct SegmentRow: View {
                 .transition(.opacity)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
         .padding(.horizontal, 10)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(isLatest
                       ? Color.accentColor.opacity(0.08)
-                      : (isHovering ? Color.secondary.opacity(0.06) : Color.secondary.opacity(0.025)))
+                      : (isHovering ? Color.secondary.opacity(0.08) : Color.clear))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 6)
                 .stroke(isLatest ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
         )
         .onHover { isHovering = $0 }
