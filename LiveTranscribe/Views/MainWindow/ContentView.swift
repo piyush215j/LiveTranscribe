@@ -87,16 +87,30 @@ struct ContentView: View {
             }
         }
 
-        // Centre: Status + audio level
+        // Centre: Status pill + audio level
         ToolbarItem(placement: .principal) {
-            VStack(spacing: 2) {
+            HStack(spacing: 6) {
+                if transcriptionVM.isCapturing {
+                    Circle()
+                        .fill(transcriptionVM.isPaused ? Color.orange : Color.green)
+                        .frame(width: 7, height: 7)
+                        .shadow(color: transcriptionVM.isPaused ? .orange.opacity(0.5) : .green.opacity(0.5), radius: 3)
+                }
+
                 Text(transcriptionVM.statusMessage)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                AudioLevelBar(level: transcriptionVM.audioLevel)
-                    .frame(width: 140, height: 4)
-                    .opacity(transcriptionVM.isCapturing ? 1 : 0)
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundStyle(transcriptionVM.isCapturing ? .primary : .secondary)
+
+                if transcriptionVM.isCapturing && !transcriptionVM.isPaused {
+                    AudioLevelBar(level: transcriptionVM.audioLevel)
+                        .frame(width: 50, height: 3)
+                        .cornerRadius(2)
+                }
             }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Color.secondary.opacity(0.08))
+            .clipShape(Capsule())
         }
 
         // Right: Model picker

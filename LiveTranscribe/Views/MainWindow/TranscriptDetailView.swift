@@ -2,9 +2,11 @@
 // LiveTranscribe
 //
 // Shows the transcript for the currently selected or live session.
-// Supports auto-scroll, search highlighting, pause/resume, and export.
+// Supports auto-scroll, search highlighting, speech card styling,
+// on-hover segment copy, live audio waveform, and quick exports.
 
 import SwiftUI
+import AppKit
 
 struct TranscriptDetailView: View {
 
@@ -15,6 +17,7 @@ struct TranscriptDetailView: View {
     @State private var searchText     = ""
     @State private var showExportMenu = false
     @State private var exportResult:  URL?
+    @State private var copiedSessionText = false
 
     // Determine what to display: live session OR selected history session
     private var displaySession: TranscriptSession? {
@@ -38,17 +41,18 @@ struct TranscriptDetailView: View {
         ZStack {
             if let session = displaySession {
                 VStack(spacing: 0) {
-                    // Header bar
+                    // ── Header Bar ─────────────────────────────────────────
                     headerBar(session: session)
                     Divider()
 
-                    // Transcript scroll view
+                    // ── Transcript Scroll View ─────────────────────────────
                     ScrollViewReader { proxy in
                         ScrollView {
-                            LazyVStack(alignment: .leading, spacing: 0) {
-                                ForEach(displaySegments) { seg in
+                            LazyVStack(alignment: .leading, spacing: 8) {
+                                ForEach(Array(displaySegments.enumerated()), id: \.element.id) { idx, seg in
                                     SegmentRow(
                                         segment: seg,
+                                        isLatest: transcriptionVM.isCapturing && idx == displaySegments.count - 1,
                                         searchQuery: searchText,
                                         showTimestamp: settings.showTimestamps,
                                         fontSize: settings.fontSize
@@ -57,7 +61,7 @@ struct TranscriptDetailView: View {
                                 }
 
                                 // Bottom anchor for auto-scroll
-                                Color.clear.frame(height: 1).id("bottom")
+                                Color.clear.frame(height: 8).id("bottom")
                             }
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)
@@ -72,12 +76,14 @@ struct TranscriptDetailView: View {
                     }
 
                     Divider()
+                    // ── Bottom Bar ─────────────────────────────────────────
                     bottomBar(session: session)
                 }
             } else {
                 placeholderView
             }
 
+            // ── Model Loading Overlay ──────────────────────────────────────
             if transcriptionVM.isModelLoading {
                 VStack(spacing: 16) {
                     ProgressView()
@@ -108,10 +114,28 @@ struct TranscriptDetailView: View {
 
     private func headerBar(session: TranscriptSession) -> some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(session.title)
-                    .font(.system(size: 15, weight: .semibold))
+            VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
+                    Text(session.title)
+                        .font(.system(size: 15, weight: .semibold))
+
+                    if transcriptionVM.isCapturing {
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 6, height: 6)
+                            Text("RECORDING")
+                                .font(.system(size: 9, weight: .heavy))
+                                .foregroundStyle(.red)
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.red.opacity(0.12))
+                        .clipShape(Capsule())
+                    }
+                }
+
+                HStack(spacing: 10) {
                     Label(session.formattedDuration, systemImage: "clock")
                     Label(session.modelUsed, systemImage: "cpu")
                     Label(session.languageLabel, systemImage: "globe")
@@ -120,10 +144,16 @@ struct TranscriptDetailView: View {
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
             }
+
             Spacer()
 
+            // Live Audio Waveform Visualizer
             if transcriptionVM.isCapturing {
-                // Pause / Resume
+                LiveWaveformVisualizer(level: transcriptionVM.audioLevel, isPaused: transcriptionVM.isPaused)
+                    .frame(width: 80, height: 24)
+                    .padding(.trailing, 4)
+
+                // Pause / Resume Button
                 Button {
                     transcriptionVM.togglePause()
                 } label: {
@@ -136,7 +166,7 @@ struct TranscriptDetailView: View {
                 .buttonStyle(.bordered)
                 .tint(transcriptionVM.isPaused ? .green : .orange)
             } else {
-                // Resume recording into this existing session
+                // Resume recording button
                 Button {
                     Task {
                         await transcriptionVM.startTranscription(resuming: session)
@@ -169,10 +199,29 @@ struct TranscriptDetailView: View {
     // MARK: - Bottom bar
 
     private func bottomBar(session: TranscriptSession) -> some View {
-        HStack {
+        HStack(spacing: 14) {
             Text("~\(session.wordCount) words")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(.secondary)
+
+            // Copy all transcript text button
+            Button {
+                let full = session.fullText
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(full, forType: .string)
+                copiedSessionText = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    copiedSessionText = false
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: copiedSessionText ? "checkmark" : "doc.on.doc")
+                    Text(copiedSessionText ? "Copied All" : "Copy All")
+                }
+                .font(.system(size: 11))
+                .foregroundStyle(copiedSessionText ? Color.green : Color.secondary)
+            }
+            .buttonStyle(.plain)
 
             Spacer()
 
@@ -204,30 +253,57 @@ struct TranscriptDetailView: View {
         .background(.ultraThinMaterial)
     }
 
-    // MARK: - Placeholder
+    // MARK: - Placeholder View
 
     private var placeholderView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "waveform")
-                .font(.system(size: 60))
-                .foregroundStyle(.quinary)
+        VStack(spacing: 24) {
+            ZStack {
+                Circle()
+                    .fill(Color.accentColor.opacity(0.12))
+                    .frame(width: 90, height: 90)
+                Image(systemName: "waveform")
+                    .font(.system(size: 44, weight: .light))
+                    .foregroundStyle(Color.accentColor)
+            }
 
-            Text("LiveTranscribe")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(.primary)
+            VStack(spacing: 6) {
+                Text("LiveTranscribe")
+                    .font(.system(size: 26, weight: .bold))
+                Text("AI-powered system audio transcription running 100% on-device.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+            }
 
-            Text("Press ⇧⌘R to begin capturing system audio\nor select a past session from the sidebar.")
-                .font(.system(size: 14))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            VStack(spacing: 8) {
+                HStack(spacing: 12) {
+                    shortcutBadge(keys: "⇧⌘N", action: "Start New Recording")
+                    shortcutBadge(keys: "⌥⌘R", action: "Resume Selected Session")
+                    shortcutBadge(keys: "⌘.", action: "Stop Recording")
+                }
+            }
 
-            HStack(spacing: 16) {
-                featureChip(icon: "cpu", text: "Local AI")
+            HStack(spacing: 12) {
+                featureChip(icon: "cpu", text: "faster-whisper AI")
                 featureChip(icon: "lock.shield", text: "100% Offline")
-                featureChip(icon: "apple.intelligence", text: "Apple Silicon")
+                featureChip(icon: "apple.intelligence", text: "Apple Silicon Optimized")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(40)
+    }
+
+    private func shortcutBadge(keys: String, action: String) -> some View {
+        HStack(spacing: 6) {
+            Text(keys)
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.secondary.opacity(0.15))
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+            Text(action)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+        }
     }
 
     private func featureChip(icon: String, text: String) -> some View {
@@ -235,9 +311,9 @@ struct TranscriptDetailView: View {
             Image(systemName: icon)
             Text(text)
         }
-        .font(.system(size: 12, weight: .medium))
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .font(.system(size: 11, weight: .medium))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
         .background(Color.accentColor.opacity(0.1))
         .clipShape(Capsule())
         .foregroundStyle(Color.accentColor)
@@ -256,41 +332,81 @@ struct TranscriptDetailView: View {
     }
 }
 
-// MARK: - Segment Row
+// MARK: - Segment Row (Speech Card)
 
 private struct SegmentRow: View {
-    let segment:      TranscriptSegment
-    let searchQuery:  String
-    let showTimestamp: Bool
-    let fontSize:     Double
+    let segment:       TranscriptSegment
+    let isLatest:      Bool
+    let searchQuery:   String
+    let showTimestamp:  Bool
+    let fontSize:      Double
+
+    @State private var isHovering = false
+    @State private var copied = false
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             if showTimestamp {
                 Text(segment.formattedStartTime)
-                    .font(.system(size: fontSize - 2, design: .monospaced))
+                    .font(.system(size: max(10, fontSize - 3), weight: .medium, design: .monospaced))
                     .foregroundStyle(.secondary)
-                    .frame(width: 72, alignment: .leading)
-                    .padding(.top, 1)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Color.secondary.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                    .frame(width: 76, alignment: .leading)
             }
 
-            highlightedText
-                .font(.system(size: fontSize))
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 4) {
+                highlightedText
+                    .font(.system(size: fontSize))
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            // Quick Copy on hover
+            if isHovering {
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(segment.text, forType: .string)
+                    copied = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                        copied = false
+                    }
+                } label: {
+                    Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                        .font(.system(size: 11))
+                        .foregroundStyle(copied ? Color.green : Color.secondary)
+                        .padding(4)
+                        .background(Color.secondary.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .help("Copy segment text")
+                .transition(.opacity)
+            }
         }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 8)
-        .background(Color.clear)
-        .contentShape(Rectangle())
+        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(isLatest
+                      ? Color.accentColor.opacity(0.08)
+                      : (isHovering ? Color.secondary.opacity(0.06) : Color.secondary.opacity(0.025)))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isLatest ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
+        )
+        .onHover { isHovering = $0 }
     }
 
     @ViewBuilder
     private var highlightedText: some View {
         if searchQuery.isEmpty {
             Text(segment.text)
+                .foregroundStyle(.primary)
         } else {
-            // Highlight matching text
             let text = segment.text
             let ranges = text.ranges(of: searchQuery, options: .caseInsensitive)
             if ranges.isEmpty {
@@ -312,6 +428,40 @@ private struct SegmentRow: View {
             }
         }
         return Text(result)
+    }
+}
+
+// MARK: - Live Waveform Visualizer
+
+private struct LiveWaveformVisualizer: View {
+    let level: Float
+    let isPaused: Bool
+
+    private let barCount = 10
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<barCount, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 1.5)
+                    .fill(
+                        LinearGradient(
+                            colors: isPaused ? [.orange.opacity(0.6), .orange] : [.green, .cyan],
+                            startPoint: .bottom,
+                            endPoint: .top
+                        )
+                    )
+                    .frame(width: 3, height: barHeight(for: index))
+                    .animation(.easeOut(duration: 0.08), value: level)
+            }
+        }
+    }
+
+    private func barHeight(for index: Int) -> CGFloat {
+        if isPaused { return 4 }
+        let factor = sin(Double(index) / Double(barCount) * .pi)
+        let normalizedLevel = CGFloat(min(max(level * 3.0, 0.1), 1.0))
+        let height = 4 + (20 * normalizedLevel * CGFloat(factor))
+        return max(4, min(height, 22))
     }
 }
 

@@ -158,15 +158,17 @@ struct MenuBarView: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Image(systemName: icon)
+                    .font(.system(size: 13, weight: .semibold))
                     .frame(width: 20)
                     .foregroundStyle(tint)
                 Text(label)
-                    .font(.system(size: 13))
+                    .font(.system(size: 12.5, weight: .medium))
                 Spacer()
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(Color.clear)
+            .background(Color.secondary.opacity(0.06))
+            .cornerRadius(6)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

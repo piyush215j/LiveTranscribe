@@ -14,10 +14,14 @@ struct FloatingTranscriptView: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            // ── Background ────────────────────────────────────────────────
+            // ── Glassmorphism Background ──────────────────────────────────
             RoundedRectangle(cornerRadius: 14)
                 .fill(.ultraThinMaterial.opacity(vm.settings.floatingWindowOpacity))
                 .ignoresSafeArea()
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
 
             VStack(spacing: 0) {
                 // ── Title bar ─────────────────────────────────────────────
